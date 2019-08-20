@@ -13,9 +13,11 @@ catch(PDOException $e)
     {
     //echo "Connection failed: " . $e->getMessage();
     }
+
 if(isset($_GET['date'])){
   $queryDate = $_GET['date'];
 } else {
+  //echo date("Y-m-d H:i");
   $queryDate = date("Y-m-d");
 }
 
@@ -25,8 +27,8 @@ if(isset($_GET['type'])) {
   $queryType = 'daily';
 }
 
-$sqlDaily = "SELECT `timestamp`, `playercount`,`playerList` FROM `counter` WHERE DATE(`timestamp`) = :date ORDER BY `timestamp`";
-$sqlWeekly = "SELECT `timestamp`, `playercount`,`playerList` FROM `counter` WHERE yearweek(`timestamp`) = yearweek(:date) ORDER BY `timestamp`";
+$sqlDaily = "SELECT UNIX_TIMESTAMP(`timestamp`) as 'timestamp', `playercount`,`playerList` FROM `counter` WHERE DATE(`timestamp`) = :date ORDER BY `timestamp`";
+$sqlWeekly = "SELECT UNIX_TIMESTAMP(`timestamp`) as 'timestamp', `playercount`,`playerList` FROM `counter` WHERE yearweek(`timestamp`) = yearweek(:date) ORDER BY `timestamp`";
 
 if($queryType == 'daily') {
   $stmt = $conn->prepare($sqlDaily);
@@ -40,12 +42,24 @@ $stmt->bindValue(":date", $queryDate);
 $stmt->execute();
 $playersToday = $stmt->fetchAll(PDO::FETCH_ASSOC); 
 $json = json_encode($playersToday);
+
+//print_r($playersToday);
+
 function _dateConvert($vDate) {
-    $date1 = new DateTime($vDate);
+    $date1 = new DateTime('@' . $vDate);
     //$date2 = "Date(Date.UTC(".date_format($date1, 'Y').", ".((int) date_format($date1, 'm') - 1).", ".date_format($date1, 'd').", ".date_format($date1, 'H').", ".date_format($date1, 'i').", ".date_format($date1, 's')."))";
     $date2 = "Date(".date_format($date1, 'Y').", ".((int) date_format($date1, 'm') - 1).", ".date_format($date1, 'd').", ".date_format($date1, 'H').", ".date_format($date1, 'i').", ".date_format($date1, 's').")";
     return $date2;
 }
+
+
+function convertDateToUTC($vDate) {
+  //$theDate = strtotime($vDate);
+  //echo $theDate;
+  return gmdate("Y-M-d H:i:s", $vDate);
+  //return strtotime($theDate);
+}
+
 ?>
 
 
@@ -74,12 +88,13 @@ function _dateConvert($vDate) {
 <form action="" method="GET">
   <input type="date" id="date" name="date" value="<?php echo $queryDate; ?>">
   <select name="type" id="type">
-    <option value="daily" <?php if($_GET['type'] == 'daily') {echo 'selected';} ?> >Daily</option>
-    <option value="weekly" <?php if($_GET['type'] == 'weekly') {echo 'selected';} ?> >Weekly</option>
+    <option value="daily" <?php if($queryType == 'daily') {echo 'selected';} ?> >Daily</option>
+    <option value="weekly" <?php if($queryType == 'weekly') {echo 'selected';} ?> >Weekly</option>
     <!-- <option value="yearly">Yearly</option> -->
   </select>
   <input type="submit" value='submit'>
 </form>
+<h3>All dates & times are in UTC.</h3>
 <div id="chart_div" class="chart"></div>
    
 <script type="text/javascript">
@@ -102,7 +117,7 @@ function _dateConvert($vDate) {
         ]);
 
         var options = {
-          title: 'Players <?php echo $queryDate; ?> (UTC)',
+          title: 'Players <?php echo $queryDate; ?>',
           hAxis: {
             format: 'Y-M-d HH:mm',
             //gridlines: {count: 6}
@@ -125,14 +140,14 @@ function _dateConvert($vDate) {
     </script>
 <table width="100%">
     <tr>
-        <td align="center">Timestamp (HST)</td>
+        <td align="center">Timestamp</td>
         <td align="center">Player Count</td>
         <td align="center">Player List</td>
     </tr>
     <?php
 
     for ($i=0, $len=count($playersToday); $i < $len; $i++){
-        echo '<tr><td align="center">' . $playersToday[$i][timestamp] . '</td><td align="center">' . $playersToday[$i][playercount] . '</td><td align="center">' . $playersToday[$i][playerList] . '</td></tr>';
+        echo '<tr><td align="center">' . convertDateToUTC($playersToday[$i][timestamp]) . " (" . $playersToday[$i][timestamp] . ')'  . '</td><td align="center">' . $playersToday[$i][playercount] . '</td><td align="center">' . $playersToday[$i][playerList] . '</td></tr>';
     }
 
     ?>
