@@ -19,15 +19,31 @@ if(isset($_GET['date'])){
   $queryDate = date("Y-m-d");
 }
 
-$stmt = $conn->prepare("SELECT `timestamp`, `playercount` FROM `counter` WHERE DATE(`timestamp`) = :date ORDER BY `timestamp`");
+if(isset($_GET['type'])) {
+  $queryType = $_GET['type'];
+} else {
+  $queryType = 'daily';
+}
+
+$sqlDaily = "SELECT `timestamp`, `playercount`,`playerList` FROM `counter` WHERE DATE(`timestamp`) = :date ORDER BY `timestamp`";
+$sqlWeekly = "SELECT `timestamp`, `playercount`,`playerList` FROM `counter` WHERE yearweek(`timestamp`) = yearweek(:date) ORDER BY `timestamp`";
+
+if($queryType == 'daily') {
+  $stmt = $conn->prepare($sqlDaily);
+} else if($queryType == 'weekly') {
+  $stmt = $conn->prepare($sqlWeekly);
+}
+
+
+//$stmt = $conn->prepare("SELECT `timestamp`, `playercount` FROM `counter` WHERE DATE(`timestamp`) = :date ORDER BY `timestamp`");
 $stmt->bindValue(":date", $queryDate);
 $stmt->execute();
 $playersToday = $stmt->fetchAll(PDO::FETCH_ASSOC); 
 $json = json_encode($playersToday);
-
 function _dateConvert($vDate) {
     $date1 = new DateTime($vDate);
-    $date2 = "Date(Date.UTC(".date_format($date1, 'Y').", ".((int) date_format($date1, 'm') - 1).", ".date_format($date1, 'd').", ".date_format($date1, 'H').", ".date_format($date1, 'i').", ".date_format($date1, 's')."))";
+    //$date2 = "Date(Date.UTC(".date_format($date1, 'Y').", ".((int) date_format($date1, 'm') - 1).", ".date_format($date1, 'd').", ".date_format($date1, 'H').", ".date_format($date1, 'i').", ".date_format($date1, 's')."))";
+    $date2 = "Date(".date_format($date1, 'Y').", ".((int) date_format($date1, 'm') - 1).", ".date_format($date1, 'd').", ".date_format($date1, 'H').", ".date_format($date1, 'i').", ".date_format($date1, 's').")";
     return $date2;
 }
 ?>
@@ -57,6 +73,11 @@ function _dateConvert($vDate) {
 
 <form action="" method="GET">
   <input type="date" id="date" name="date" value="<?php echo $queryDate; ?>">
+  <select name="type" id="type">
+    <option value="daily" <?php if($_GET['type'] == 'daily') {echo 'selected';} ?> >Daily</option>
+    <option value="weekly" <?php if($_GET['type'] == 'weekly') {echo 'selected';} ?> >Weekly</option>
+    <!-- <option value="yearly">Yearly</option> -->
+  </select>
   <input type="submit" value='submit'>
 </form>
 <div id="chart_div" class="chart"></div>
@@ -83,8 +104,8 @@ function _dateConvert($vDate) {
         var options = {
           title: 'Players <?php echo $queryDate; ?> (UTC)',
           hAxis: {
-            format: 'HH:mm',
-            gridlines: {count: 24}
+            format: 'Y-M-d HH:mm',
+            //gridlines: {count: 6}
           },
           vAxis: {
             gridlines: {color: 'none'},
@@ -102,15 +123,16 @@ function _dateConvert($vDate) {
         drawChart();
       });
     </script>
-<table width="300">
+<table width="100%">
     <tr>
         <td align="center">Timestamp (HST)</td>
         <td align="center">Player Count</td>
+        <td align="center">Player List</td>
     </tr>
     <?php
 
     for ($i=0, $len=count($playersToday); $i < $len; $i++){
-        echo '<tr><td align="center">' . $playersToday[$i][timestamp] . '</td><td align="center">' . $playersToday[$i][playercount] . '</td></tr>';
+        echo '<tr><td align="center">' . $playersToday[$i][timestamp] . '</td><td align="center">' . $playersToday[$i][playercount] . '</td><td align="center">' . $playersToday[$i][playerList] . '</td></tr>';
     }
 
     ?>

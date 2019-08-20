@@ -33,11 +33,18 @@
         //print_r( $Query->Query() );
         $data = $Query->Query( );
         $playerCount = $data[players][online];
-        echo $playerCount;
-        $stmt = $conn->prepare("INSERT INTO counter (playercount) VALUES (:count)");
+        $playerList = '';
+        for($i=0, $len=count($data[players][sample]); $i < $len; $i++) {
+            $playerList .= $data[players][sample][$i][name] . ' ';
+        }
+        
+        $stmt = $conn->prepare("INSERT INTO counter (playercount,playerList) VALUES (:count,:plist)");
         $stmt->bindValue(':count', $playerCount);
+        $stmt->bindValue(':plist', $playerList);
         $stmt->execute();
 
+        echo 'Player Count: ' . $playerCount . '<br />';
+        echo 'Player List: ' . $playerList;
     }
 	catch( MinecraftPingException $e )
 	{
