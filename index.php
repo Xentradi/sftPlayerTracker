@@ -37,7 +37,6 @@ if($queryType == 'daily') {
 }
 
 
-//$stmt = $conn->prepare("SELECT `timestamp`, `playercount` FROM `counter` WHERE DATE(`timestamp`) = :date ORDER BY `timestamp`");
 $stmt->bindValue(":date", $queryDate);
 $stmt->execute();
 $playersToday = $stmt->fetchAll(PDO::FETCH_ASSOC); 
@@ -47,8 +46,8 @@ $json = json_encode($playersToday);
 
 function _dateConvert($vDate) {
     $date1 = new DateTime('@' . $vDate);
-    //$date2 = "Date(Date.UTC(".date_format($date1, 'Y').", ".((int) date_format($date1, 'm') - 1).", ".date_format($date1, 'd').", ".date_format($date1, 'H').", ".date_format($date1, 'i').", ".date_format($date1, 's')."))";
-    $date2 = "Date(".date_format($date1, 'Y').", ".((int) date_format($date1, 'm') - 1).", ".date_format($date1, 'd').", ".date_format($date1, 'H').", ".date_format($date1, 'i').", ".date_format($date1, 's').")";
+    $date2 = "Date(Date.UTC(".date_format($date1, 'Y').", ".((int) date_format($date1, 'm') - 1).", ".((int)date_format($date1, 'd') - 1).", ".date_format($date1, 'H').", ".date_format($date1, 'i').", ".date_format($date1, 's')."))";
+    $date2 = "Date(".date_format($date1, 'Y').", ".((int) date_format($date1, 'm') - 1).", ".((int)date_format($date1, 'd') - 0).", ".date_format($date1, 'H').", ".date_format($date1, 'i').", ".date_format($date1, 's').")";
     return $date2;
 }
 
@@ -119,8 +118,20 @@ function convertDateToUTC($vDate) {
         var options = {
           title: 'Players <?php echo $queryDate; ?>',
           hAxis: {
-            format: 'Y-M-d HH:mm',
-            //gridlines: {count: 6}
+            //format: 'M-d HH:mm',
+            gridlines: {
+              count: -1,
+              units: {
+                days: {format: ['MMM dd']},
+                hours: {format: ['HH:mm', 'ha']},
+              }
+            },
+            minorGridlines: {
+            units: {
+              hours: {format: ['hh:mm:ss a', 'ha']},
+              minutes: {format: ['HH:mm a Z', ':mm']}
+            }
+          }
           },
           vAxis: {
             gridlines: {color: 'none'},
@@ -128,8 +139,10 @@ function convertDateToUTC($vDate) {
           }
         };
 
-        var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+        var formatter = new google.visualization.DateFormat({pattern: 'yyyy-MM-dd HH:mm:ss', timeZone: +0});
+        //formatter.format(data, 0);
 
+        var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
         chart.draw(data, options);
       }
   
@@ -137,6 +150,7 @@ function convertDateToUTC($vDate) {
       $(window).resize(function(){
         drawChart();
       });
+      console.log(new <?php echo _dateConvert(1566327602); ?>);
     </script>
 <table width="100%">
     <tr>
