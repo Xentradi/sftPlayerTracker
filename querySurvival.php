@@ -2,8 +2,6 @@
 	require __DIR__ . '/src/MinecraftPing.php';
 	require __DIR__ . '/src/MinecraftPingException.php';
     
-    
-    
 	use xPaw\MinecraftPing;
 	use xPaw\MinecraftPingException;
     
@@ -34,7 +32,7 @@
         $data = $Query->Query( );
         $playerCount = $data[players][online];
         
-        $stmt = $conn->prepare("INSERT INTO counter (serverID,playercount) VALUES (:serverID,:count,)");
+        $stmt = $conn->prepare("INSERT INTO playerCount (serverID,playercount) VALUES (:serverID,:count,)");
         $stmt->bindValue(':serverID', 1);
         $stmt->bindValue(':count', $playerCount);
         $stmt->execute();

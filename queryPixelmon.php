@@ -7,8 +7,8 @@
 	use xPaw\MinecraftPing;
 	use xPaw\MinecraftPingException;
     
-    define( 'MQ_SERVER_ADDR', '167.114.173.235' );
-	define( 'MQ_SERVER_PORT', 25568 );
+    define( 'MQ_SERVER_ADDR', '192.99.34.102' );
+	define( 'MQ_SERVER_PORT', 1339 );
 	define( 'MQ_TIMEOUT', 1 );
 
     $servername = 'x2.xentradi.com';
@@ -32,15 +32,15 @@
 		
         //print_r( $Query->Query() );
         $data = $Query->Query( );
-        $playerCount = $data[players][online];
+        $playerCount = $data['players']['online'];
         
-        $stmt = $conn->prepare("INSERT INTO counter (serverID,playercount) VALUES (:serverID,:count,)");
-        $stmt->bindValue(':serverID', 1);
+        $stmt = $conn->prepare("INSERT INTO playerCount (serverID,playercount) VALUES (:serverID,:count)");
+        $stmt->bindValue(':serverID', 2);
         $stmt->bindValue(':count', $playerCount);
         $stmt->execute();
 
         echo 'Player Count: ' . $playerCount . '<br />';
-        echo 'Player List: ' . $playerList;
+        //echo 'Player List: ' . $playerList;
     }
 	catch( MinecraftPingException $e )
 	{
