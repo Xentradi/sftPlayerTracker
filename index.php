@@ -1,50 +1,67 @@
 <?php
-$servername = 'x2.xentradi.com';
-$username = 'sftTesting';
-$password = 'Hawa11an!';
+require __DIR__ . '/config.php';
+
 
 try {
-    $conn = new PDO("mysql:host=$servername;dbname=sftTesting", $username, $password);
+    $conn = new PDO("mysql:host=$dbHostname;dbname=sftTesting", $dbUsername, $dbPassword);
     // set the PDO error mode to exception
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    //echo "Connected successfully<br />"; 
-    }
-catch(PDOException $e)
-    {
+    //echo "Connected successfully<br />";
+} catch (PDOException $e) {
     //echo "Connection failed: " . $e->getMessage();
-    }
+}
 
-if(isset($_GET['date'])){
-  $queryDate = $_GET['date'];
+/**
+  * Retreive the list of servers from the database
+ */
+$stmt = $conn->prepare("SELECT * FROM `" . $dbTableName_serverList . "`;");
+$stmt->execute();
+$SERVERS = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$SERVER_COUNT = count($SERVERS);
+
+
+if (isset($_GET['date'])) {
+    $queryDate = $_GET['date'];
 } else {
-  //echo date("Y-m-d H:i");
-  $queryDate = date("Y-m-d");
+    //echo date("Y-m-d H:i");
+    $queryDate = date("Y-m-d");
 }
 
-if(isset($_GET['type'])) {
-  $queryType = $_GET['type'];
+if (isset($_GET['serverID'])) {
+    $serverID = $_GET['serverID'];
 } else {
-  $queryType = 'daily';
+    $serverID = 1;
 }
 
-$sqlDaily = "SELECT UNIX_TIMESTAMP(`timestamp`) as 'timestamp', `playercount`,`playerList` FROM `counter` WHERE DATE(`timestamp`) = :date ORDER BY `timestamp`";
-$sqlWeekly = "SELECT UNIX_TIMESTAMP(`timestamp`) as 'timestamp', `playercount`,`playerList` FROM `counter` WHERE yearweek(`timestamp`) = yearweek(:date) ORDER BY `timestamp`";
-
-if($queryType == 'daily') {
-  $stmt = $conn->prepare($sqlDaily);
-} else if($queryType == 'weekly') {
-  $stmt = $conn->prepare($sqlWeekly);
+if (isset($_GET['type'])) {
+    $queryType = $_GET['type'];
+} else {
+    $queryType = 'daily';
 }
 
 
+$sqlDaily = "SELECT UNIX_TIMESTAMP(`timestamp`) as 'timestamp', `playercount`,`playerList` FROM `" . $dbTableName_counter . "` WHERE `serverID` = :serverID AND DATE(`timestamp`) = :date ORDER BY `timestamp`";
+$sqlWeekly = "SELECT UNIX_TIMESTAMP(`timestamp`) as 'timestamp', `playercount`,`playerList` FROM `" . $dbTableName_counter . "` WHERE `serverID` = :serverID AND yearweek(`timestamp`) = yearweek(:date) ORDER BY `timestamp`";
+$sqlMonthly = "SELECT UNIX_TIMESTAMP(`timestamp`) as 'timestamp', `playercount`,`playerList` FROM `" . $dbTableName_counter . "` WHERE `serverID` = :serverID AND month(`timestamp`) = month(:date) ORDER BY `timestamp`";
+
+if ($queryType == 'daily') {
+    $stmt = $conn->prepare($sqlDaily);
+} elseif ($queryType == 'weekly') {
+    $stmt = $conn->prepare($sqlWeekly);
+} elseif ($queryType == 'monthly') {
+  $stmt = $conn->prepare($sqlMonthly);
+}
+
+$stmt->bindValue(":serverID", $serverID);
 $stmt->bindValue(":date", $queryDate);
 $stmt->execute();
-$playersToday = $stmt->fetchAll(PDO::FETCH_ASSOC); 
+$playersToday = $stmt->fetchAll(PDO::FETCH_ASSOC);
 $json = json_encode($playersToday);
 
 //print_r($playersToday);
 
-function _dateConvert($vDate) {
+function _dateConvert($vDate)
+{
     $date1 = new DateTime('@' . $vDate);
     $date2 = "Date(Date.UTC(".date_format($date1, 'Y').", ".((int) date_format($date1, 'm') - 1).", ".((int)date_format($date1, 'd') - 1).", ".date_format($date1, 'H').", ".date_format($date1, 'i').", ".date_format($date1, 's')."))";
     $date2 = "Date(".date_format($date1, 'Y').", ".((int) date_format($date1, 'm') - 1).", ".((int)date_format($date1, 'd') - 0).", ".date_format($date1, 'H').", ".date_format($date1, 'i').", ".date_format($date1, 's').")";
@@ -52,11 +69,12 @@ function _dateConvert($vDate) {
 }
 
 
-function convertDateToUTC($vDate) {
-  //$theDate = strtotime($vDate);
-  //echo $theDate;
-  return gmdate("Y-M-d H:i:s", $vDate);
-  //return strtotime($theDate);
+function convertDateToUTC($vDate)
+{
+    //$theDate = strtotime($vDate);
+    //echo $theDate;
+    return gmdate("Y-M-d H:i:s", $vDate);
+    //return strtotime($theDate);
 }
 
 ?>
@@ -86,9 +104,19 @@ function convertDateToUTC($vDate) {
 
 <form action="" method="GET">
   <input type="date" id="date" name="date" value="<?php echo $queryDate; ?>">
+  <select name="serverID" id="serverID">
+      <?php
+        for($i = 0; $i < $SERVER_COUNT; $i++) {
+      ?>
+          <option value="<?php echo $SERVERS[$i]['id'] ?>" <?php if($serverID == $SERVERS[$i]['id']) echo "selected" ?> > <?php echo $SERVERS[$i]['name']; ?></option>
+      <?php
+        }
+      ?>
+  </select>
   <select name="type" id="type">
-    <option value="daily" <?php if($queryType == 'daily') {echo 'selected';} ?> >Daily</option>
-    <option value="weekly" <?php if($queryType == 'weekly') {echo 'selected';} ?> >Weekly</option>
+    <option value="daily" <?php if ($queryType == 'daily') {echo 'selected';} ?> >Daily</option>
+    <option value="weekly" <?php if ($queryType == 'weekly') {echo 'selected';} ?> >Weekly</option>
+    <option value="monthly" <?php if ($queryType == 'monthly') {echo 'selected';} ?> >Monthly</option>
     <!-- <option value="yearly">Yearly</option> -->
   </select>
   <input type="submit" value='submit'>
@@ -108,9 +136,11 @@ function convertDateToUTC($vDate) {
 
         data.addRows([
             <?php
-            for ($i=0, $len=count($playersToday); $i < $len; $i++){
+            for ($i=0, $len=count($playersToday); $i < $len; $i++) {
                 echo '[new ' . _dateConvert($playersToday[$i][timestamp]) . ', ' . $playersToday[$i][playercount] . ']';
-                if($i !== $len-1) { echo ', ';}
+                if ($i !== $len-1) {
+                    echo ', ';
+                }
             }
             ?>
         ]);
@@ -152,6 +182,10 @@ function convertDateToUTC($vDate) {
       });
       console.log(new <?php echo _dateConvert(1566327602); ?>);
     </script>
+<?php
+if($showRecordTable == true) {
+?>
+
 <table width="100%">
     <tr>
         <td align="center">Timestamp</td>
@@ -160,11 +194,15 @@ function convertDateToUTC($vDate) {
     </tr>
     <?php
 
-    for ($i=0, $len=count($playersToday); $i < $len; $i++){
+    for ($i=0, $len=count($playersToday); $i < $len; $i++) {
         echo '<tr><td align="center">' . convertDateToUTC($playersToday[$i][timestamp]) . " (" . $playersToday[$i][timestamp] . ')'  . '</td><td align="center">' . $playersToday[$i][playercount] . '</td><td align="center">' . $playersToday[$i][playerList] . '</td></tr>';
     }
 
     ?>
 </table>
+
+<?php } ?>
+
+
 </body>
 </html>

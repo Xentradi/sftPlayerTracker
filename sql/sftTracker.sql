@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Nov 15, 2019 at 08:35 AM
+-- Generation Time: Nov 17, 2019 at 01:47 AM
 -- Server version: 5.7.27-0ubuntu0.19.04.1-log
 -- PHP Version: 7.1.17-0ubuntu0.17.10.1
 
@@ -23,10 +23,10 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
--- Table structure for table `playerCount`
+-- Table structure for table `counter`
 --
 
-CREATE TABLE `playerCount` (
+CREATE TABLE `counter` (
   `id` int(11) NOT NULL,
   `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `serverID` int(11) DEFAULT NULL,
@@ -34,14 +34,33 @@ CREATE TABLE `playerCount` (
   `playerList` text
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `servers`
+--
+
+CREATE TABLE `servers` (
+  `id` int(11) NOT NULL,
+  `name` text NOT NULL,
+  `address` text NOT NULL,
+  `port` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
 --
 -- Indexes for dumped tables
 --
 
 --
--- Indexes for table `playerCount`
+-- Indexes for table `counter`
 --
-ALTER TABLE `playerCount`
+ALTER TABLE `counter`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `servers`
+--
+ALTER TABLE `servers`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -49,10 +68,15 @@ ALTER TABLE `playerCount`
 --
 
 --
--- AUTO_INCREMENT for table `playerCount`
+-- AUTO_INCREMENT for table `counter`
 --
-ALTER TABLE `playerCount`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `counter`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24170;
+--
+-- AUTO_INCREMENT for table `servers`
+--
+ALTER TABLE `servers`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
