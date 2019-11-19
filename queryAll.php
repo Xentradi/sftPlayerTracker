@@ -43,12 +43,14 @@
             if ($Query) {
                 $data = $Query->Query();
                 if ($data) {
-                    $playerCount = $data[players][online];
+                    $playerCount = $data['players']['online'];
                     $playerList = '';
-    
-                    for ($x=0, $len=count($data['players']['sample']); $x < $len; $x++) {
-                        $playerList .= $data['players']['sample'][$x]['name'] . ' ';
+                    if(isset($data['players']['sample'])) {
+                        for ($x=0, $len=count($data['players']['sample']); $x < $len; $x++) {
+                            $playerList .= $data['players']['sample'][$x]['name'] . ' ';
+                        }
                     }
+                    
                         
                     $stmt = $conn->prepare("INSERT INTO " . $dbTableName_counter . " (serverID,playercount,playerList) VALUES (:serverId,:count,:plist)");
                     $stmt->bindValue(':serverId', $serverID);

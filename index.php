@@ -137,7 +137,7 @@ function convertDateToUTC($vDate)
         data.addRows([
             <?php
             for ($i=0, $len=count($playersToday); $i < $len; $i++) {
-                echo '[new ' . _dateConvert($playersToday[$i][timestamp]) . ', ' . $playersToday[$i][playercount] . ']';
+                echo '[new ' . _dateConvert($playersToday[$i]['timestamp']) . ', ' . $playersToday[$i]['playercount'] . ']';
                 if ($i !== $len-1) {
                     echo ', ';
                 }
@@ -182,6 +182,7 @@ function convertDateToUTC($vDate)
       });
       console.log(new <?php echo _dateConvert(1566327602); ?>);
     </script>
+
 <?php
 if($showRecordTable == true) {
 ?>
@@ -195,7 +196,7 @@ if($showRecordTable == true) {
     <?php
 
     for ($i=0, $len=count($playersToday); $i < $len; $i++) {
-        echo '<tr><td align="center">' . convertDateToUTC($playersToday[$i][timestamp]) . " (" . $playersToday[$i][timestamp] . ')'  . '</td><td align="center">' . $playersToday[$i][playercount] . '</td><td align="center">' . $playersToday[$i][playerList] . '</td></tr>';
+        echo '<tr><td align="center">' . convertDateToUTC($playersToday[$i]['timestamp']) . " (" . $playersToday[$i]['timestamp'] . ')'  . '</td><td align="center">' . $playersToday[$i]['playercount'] . '</td><td align="center">' . $playersToday[$i]['playerList'] . '</td></tr>';
     }
 
     ?>
