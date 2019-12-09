@@ -36,6 +36,7 @@
 
         var options = {
           title: 'Players <?php echo $queryDate; ?>',
+          backgroundColor: '#68a845',
           hAxis: {
             //format: 'M-d HH:mm',
             gridlines: {

@@ -97,6 +97,7 @@ function convertDateToUTC($vDate)
 	<style>
 	body {
 		font-family: verdana, Geneva, sans-serif;
+    background-color: #68a845;
 	}
 
 	.chart {
@@ -108,94 +109,14 @@ function convertDateToUTC($vDate)
 		margin: 0 !important;
 	}
 
-	.logo {
-		float: left;
-		margin-top: 43px
-	}
-
-	#sky {
-		width: 100%;
-		height: 265px;
-		position: absolute;
-		left: 0;
-		top: 0;
-		z-index: -1;
-		background: url(//www.superfuntime.org/lib/images/skybg.png) repeat-x
-	}
-
-	#sky {
-		width: 100%;
-		height: 265px;
-		position: absolute;
-		left: 0;
-		top: 0;
-		z-index: -1;
-		background: url(//www.superfuntime.org/lib/images/skybg.png) repeat-x
-	}
-
-	#cloudbig {
-		height: 265px;
-		background: url(//www.superfuntime.org/lib/images/cloudbig.png) repeat-x scroll left top
-	}
-
-	#cloudsmall {
-		height: 265px;
-		background: url(//www.superfuntime.org/lib/images/cloudsmall.png) repeat-x scroll left top;
-		margin-top: -265px
-	}
-
-	#logoholder {
-		width: 473px;
-		height: 192px;
-		margin-top: 43px;
-		position: absolute
-	}
-
-	#container {
-		width: 1024px;
-		min-height: 800px;
-		margin: -265px auto 0
-	}
-
-	#menu {
-		height: 30px;
-		background-color: #000;
-		margin: -265px auto 0;
-		-webkit-border-bottom-right-radius: 5px;
-		-webkit-border-bottom-left-radius: 5px;
-		-moz-border-radius-bottomright: 5px;
-		-moz-border-radius-bottomleft: 5px;
-		border-bottom-right-radius: 5px;
-		border-bottom-left-radius: 5px
-	}
-
-	#header {
-		height: 235px;
-		background: url(//www.superfuntime.org/lib/images/headerbg.png) no-repeat bottom;
-		margin-bottom: 12px;
-		margin-top: 33px;
-	}
 	</style>
 	<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 </head>
 
 <body>
-	<div id="sky"></div>
-	<div id="cloudbig"></div>
-	<div id="cloudsmall"></div>
-	<div id="mountainleft"></div>
-
-	<div class="container" id="container">
-		<div id="header">
-			<div id="logoholder">
-				<div id="logo">
-					<a href="/">
-						<img src="//www.superfuntime.org/lib/images/logoSFT.png" alt="logo sft" id="logo_sft" />
-					</a>
-				</div>
-			</div>
-		</div>
+	<div class="container-fluid" id="container">
+		
 		<form action="" method="GET" class="form-inline">
 				<input type="date" id="date" name="date" value="<?php echo $queryDate; ?>" class="form-control">
 				<select name="serverID" id="serverID" class="form-control">
@@ -220,13 +141,19 @@ function convertDateToUTC($vDate)
 		</form>
     <br />
 		<div id="chart_div" class="chart"></div>
-    <hr />
+    
 		<?php
       include 'src/script.php';
-      if ($queryType == 'yearly' || $queryType == 'monthly') {
+
+      
+      if($showRecordTable == true) {
+        echo '<hr />';
+        if ($queryType == 'yearly' || $queryType == 'monthly') {
           include 'src/YearlyTable.php';
-      } elseif($showRecordTable == true) {
-        include 'src/RecordTable.php';
+        } else {
+          include 'src/RecordTable.php';
+        }
+        
       }
     ?>
 	</div>
